@@ -1,6 +1,8 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags"%>
+<%@ taglib prefix="sec"
+	uri="http://www.springframework.org/security/tags"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,7 +10,7 @@
 <title>Login</title>
 </head>
 <body>
-											<!-- 바뀌면x -->
+	<!-- 바뀌면x -->
 	<h1>로그인</h1>
 	<h2>
 		<c:out value="${error}" />
@@ -16,18 +18,22 @@
 	<h2>
 		<c:out value="${logout}" />
 	</h2>
-	<form method="post" action="/login"> 
+	<form method="post" action="/login">
 		<div>
-			<input type="text" name="username" value=""> 
+			<input type="text" name="username" value="">
 		</div>
 		<div>
-			<input type="password" name="password" value=""> 
+			<input type="password" name="password" value="">
+		</div>
+		<!-- 로그인 상태유지 체크박스 -->
+		<div>
+			<input type="checkbox" name="remember-me"> 로그인 상태유지
 		</div>
 		<div>
-			<input type="submit"> 
+			<input type="submit">
 		</div>
-		<sec:csrfInput /> 
-		                                         <!--바뀌면x -->
+		<sec:csrfInput />
+		<!--바뀌면x -->
 	</form>
 </body>
 </html>

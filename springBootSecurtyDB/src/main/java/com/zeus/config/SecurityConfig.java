@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import com.zeus.common.security.CustomAccessDeniedHandler;
 import com.zeus.common.security.CustomLoginSuccessHandler;
@@ -69,11 +71,27 @@ public class SecurityConfig {
 				.deleteCookies("JSESSIONID", "remember-me") // 로그아웃 시 관련 쿠키 삭제
 				.permitAll() // 로그아웃 요청은 누구나 접근 가능해야 함
 		);
+		
+		
+		// 6. 자동 로그인(Remember-Me) 설정 수정
+	    httpSecurity.rememberMe(remember -> remember
+	        .key("zeus")                                  		// 인증 토큰 생성 시 사용할 키 (보안상 중요)
+	        .tokenRepository(createJDBCRepository())      		// DB를 이용한 토큰 저장소 설정
+	        .tokenValiditySeconds(60 * 60 * 24)           		// 토큰 유효 기간 (초 단위: 여기서는 24시간)
+	        .userDetailsService(createUserDetailsService())     // 자동 로그인 시 사용자 정보를 조회할 서비스
+	    );
 
 		return httpSecurity.build();
 	}
-
-	//@Autowired
+	
+	
+	private PersistentTokenRepository createJDBCRepository() {  
+		  JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();  
+		  repo.setDataSource(dataSource); 
+		  return repo; 
+		 } 
+	
+	// @Autowired
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(createUserDetailsService()).passwordEncoder(createPasswordEncoder());
 	}
