@@ -1,17 +1,23 @@
 package com.zeus.config;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
-import com.zeus.common.securty.CustomAccessDeniedHandler;
-import com.zeus.common.securty.CustomLoginSuccessHandler;
+import com.zeus.common.security.CustomAccessDeniedHandler;
+import com.zeus.common.security.CustomLoginSuccessHandler;
+import com.zeus.common.security.CustomNoOpPasswordEncoder;
+import com.zeus.common.security.CustomUserDetailsService;
 
 import jakarta.servlet.DispatcherType;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+	@Autowired
+	DataSource dataSource;
 
 	@Bean
 	SecurityFilterChain FilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -64,23 +73,32 @@ public class SecurityConfig {
 		return httpSecurity.build();
 	}
 
-	@Autowired
+	//@Autowired
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		// 지정된 아이디와 패스워드로 로그인이 가능하도록 설정한다.
-		auth.inMemoryAuthentication().withUser("member").password("{noop}1234").roles("MEMBER");
+		auth.userDetailsService(createUserDetailsService()).passwordEncoder(createPasswordEncoder());
+	}
 
-		auth.inMemoryAuthentication().withUser("admin").password("{noop}1234").roles("ADMIN", "MEMBER");
+	// 스프링 시큐리티의 UserDetailsService를 구현한 클래스를 빈으로 등록한다.
+	@Bean
+	public UserDetailsService createUserDetailsService() {
+		return new CustomUserDetailsService();
+	}
+
+	// 사용자가 정의한 비번 암호화 처리기를 빈으로 등록한다.
+	@Bean
+	public PasswordEncoder createPasswordEncoder() {
+		return new CustomNoOpPasswordEncoder();
 	}
 
 	// 3. 접근거부시 예외처리를 설정을 클래스로 이동한다.
 	@Bean
 	public AccessDeniedHandler createAccessDeniedHandler() {
-		 return new CustomAccessDeniedHandler();
-		
+		return new CustomAccessDeniedHandler();
+
 	}
 
 	public AuthenticationSuccessHandler createAuthenticationSuccessHandler() {
-		 return new CustomLoginSuccessHandler();
-		
+		return new CustomLoginSuccessHandler();
+
 	}
 }

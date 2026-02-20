@@ -1,4 +1,4 @@
-package com.zeus.common.securty;
+package com.zeus.common.security;
 
 import java.io.IOException;
 
