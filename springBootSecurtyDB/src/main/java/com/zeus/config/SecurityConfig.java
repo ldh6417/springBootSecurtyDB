@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
 	@Autowired
@@ -40,19 +42,21 @@ public class SecurityConfig {
 		httpSecurity.csrf((csrf) -> csrf.disable());
 
 		// 2.인가정책
-		httpSecurity.authorizeHttpRequests(auth -> auth.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
-				.requestMatchers("/accessError", "/login", "/css/", "/js/", "/error").permitAll()
-				.requestMatchers("/board/list").permitAll() // 게시판 목록: 누구나
-				.requestMatchers("/board/register").hasRole("MEMBER") // 게시판 등록: 회원만
-				.requestMatchers("/notice/list").permitAll() // 공지사항 목록: 누구나
-				.requestMatchers("/notice/register").hasRole("ADMIN") // 공지사항 등록: 관리자만
-				.anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
-		);
-
+		// 2.접근제한 정책
+        // URI 패턴으로 접근 제한을 설정
+        httpSecurity.authorizeHttpRequests(auth -> auth
+                .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
+                .requestMatchers("/accessError", "/login").permitAll()
+                //.requestMatchers("/board/list").permitAll() // 게시판 목록: 누구나
+                //.requestMatchers("/board/register").hasRole("MEMBER") // 게시판 등록: 회원만
+                //.requestMatchers("/notice/list").permitAll() // 공지사항 목록: 누구나
+                //.requestMatchers("/notice/register").hasRole("ADMIN") // 공지사항 등록: 관리자만
+                .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+        );
+	
 		// 3.접근거부시 예외처리 설정 (/accessError 페이지로 이동)
 		// httpSecurity.exceptionHandling(exception ->
 		// exception.accessDeniedPage("/accessError"));
-
 		// 등록한 CustomAccessDeniedHandler.java를 접근 거부 처리자로 지정한다.
 		httpSecurity.exceptionHandling(exception -> exception.accessDeniedHandler(createAccessDeniedHandler()));
 
